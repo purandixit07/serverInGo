@@ -19,8 +19,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	fileServer := http.FileServer(http.Dir(filepathRoot))
-	mux.Handle("/", apiCfg.middlewareMetricsInc(fileServer))
+	mux.Handle("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
 	mux.HandleFunc("/healthz", handlerReadiness)
 	mux.HandleFunc("/metrics", apiCfg.handlerMetrics)
 
@@ -30,8 +29,15 @@ func main() {
 		Addr:    ":" + port,
 		Handler: corsMux,
 	}
+
 	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
 	log.Fatal(srv.ListenAndServe())
+}
+
+func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(fmt.Sprintf("Hits: %d", cfg.fileserverHits)))
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
@@ -39,10 +45,4 @@ func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 		cfg.fileserverHits++
 		next.ServeHTTP(w, r)
 	})
-}
-
-func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "text/plain; charset = utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Hits: %d", cfg.fileserverHits)))
 }
