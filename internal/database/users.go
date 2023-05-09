@@ -22,6 +22,7 @@ func (db *DB) CreateUser(email string) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
+
 	return user, nil
 }
 
