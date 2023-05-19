@@ -44,6 +44,14 @@ func (db *DB) ensureDB() error {
 	return err
 }
 
+func (db *DB) ResetDB() error {
+	err := os.Remove(db.path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return db.ensureDB()
+}
+
 func (db *DB) loadDB() (DBStructure, error) {
 	db.mux.RLock()
 	defer db.mux.RUnlock()
@@ -64,6 +72,7 @@ func (db *DB) loadDB() (DBStructure, error) {
 func (db *DB) writeDB(dbStructure DBStructure) error {
 	db.mux.Lock()
 	defer db.mux.Unlock()
+
 	dat, err := json.Marshal(dbStructure)
 	if err != nil {
 		return err
