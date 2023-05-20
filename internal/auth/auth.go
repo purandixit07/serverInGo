@@ -42,7 +42,7 @@ func MakeJWT(userID int, tokenSecret string, expiresIn time.Duration) (string, e
 }
 
 // validate  JWT
-func validateJWT(tokenString, tokenSecret string) (string, error) {
+func ValidateJWT(tokenString, tokenSecret string) (string, error) {
 	claimsStruct := jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(
 		tokenString,
